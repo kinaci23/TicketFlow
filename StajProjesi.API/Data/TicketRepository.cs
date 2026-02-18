@@ -19,24 +19,29 @@ namespace StajProjesi.API.Data
         }
 
         // Sözleşmedeki işi gerçekten yapan asıl metodumuz:
-        public async Task<int> CreateTicketAsync(int userId, TicketCreateDto ticketDto)
+        public async Task<int> CreateTicketAsync(int userId, TicketCreateDto ticketDto, int predictedCategoryId)
         {
-            using (SqlConnection conn = new SqlConnection(_connectionString))
+            using (var con = new SqlConnection(_connectionString))
             {
-                using (SqlCommand cmd = new SqlCommand("sp_CreateTicket", conn))
+                await con.OpenAsync();
+
+                // NOT: Eğer Stored Procedure kullanıyorsan ismini kontrol et (Örn: sp_CreateTicket)
+                using (var cmd = new SqlCommand("sp_CreateTicket", con))
                 {
                     cmd.CommandType = CommandType.StoredProcedure;
 
-                    // Prosedürün beklediği 3 parametreyi gönderiyoruz
+                    // Parametreleri ekle
                     cmd.Parameters.AddWithValue("@UserId", userId);
                     cmd.Parameters.AddWithValue("@Title", ticketDto.Title);
                     cmd.Parameters.AddWithValue("@Description", ticketDto.Description);
+                    cmd.Parameters.AddWithValue("@Urgency", ticketDto.Urgency);
 
-                    await conn.OpenAsync();
+                    // --- YENİ EKLENEN KISIM ---
+                    cmd.Parameters.AddWithValue("@PredictedCategoryId", predictedCategoryId);
+                    // --------------------------
 
-                    // Veritabanından gelen yeni Bilet ID'sini yakalıyoruz
+                    // ID'yi geri döndür (SELECT SCOPE_IDENTITY() yaptığını varsayıyoruz)
                     var result = await cmd.ExecuteScalarAsync();
-
                     return Convert.ToInt32(result);
                 }
             }
@@ -101,15 +106,29 @@ namespace StajProjesi.API.Data
                     {
                         while (await reader.ReadAsync())
                         {
-                            tickets.Add(new TicketListDto
+                            var ticket = new TicketListDto
                             {
                                 TicketId = Convert.ToInt32(reader["TicketId"]),
                                 Title = reader["Title"].ToString(),
                                 Description = reader["Description"].ToString(),
+                                // Status ve Urgency null gelebilir kontrolü (Mevcut kodun)
                                 Status = reader["Status"] != DBNull.Value ? reader["Status"].ToString() : null,
                                 Urgency = reader["Urgency"] != DBNull.Value ? reader["Urgency"].ToString() : null,
-                                CreatedAt = reader["CreatedAt"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedAt"]) : null
-                            });
+                                CreatedAt = reader["CreatedAt"] != DBNull.Value ? Convert.ToDateTime(reader["CreatedAt"]) : null,
+
+                                // --- YENİ EKLENEN GÜVENLİ KISIM ---
+                                // Eğer veri tabanında bu alan boşsa (DBNull), C# tarafında null yap.
+                                // Doluysa sayıya (int) çevir.
+                                PredictedCategoryId = reader["PredictedCategoryId"] != DBNull.Value
+                                                      ? Convert.ToInt32(reader["PredictedCategoryId"])
+                                                      : (int?)null,
+
+                                FinalCategoryId = reader["FinalCategoryId"] != DBNull.Value
+                                                  ? Convert.ToInt32(reader["FinalCategoryId"])
+                                                  : (int?)null
+                            };
+
+                            tickets.Add(ticket);
                         }
                     }
                 }

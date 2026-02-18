@@ -7,5 +7,7 @@
 
         
         public string Description { get; set; }
+
+        public string Urgency { get; set; }
     }
 }

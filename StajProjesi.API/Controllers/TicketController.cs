@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StajProjesi.API.Data;
 using StajProjesi.API.DTOs;
+using StajProjesi_API;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace StajProjesi.API.Controllers
         [HttpPost("create")]
         public async Task<IActionResult> CreateTicket([FromBody] TicketCreateDto ticketDto)
         {
-            // Kullanıcının ID'sini dışarıdan almıyoruz, Token'ın içindeki NameIdentifier'dan (Yani yaka kartından) kendimiz söküp alıyoruz!
+            // 1. Kimlik Doğrulama (Aynı kalıyor)
             var userIdString = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(userIdString))
@@ -35,14 +36,37 @@ namespace StajProjesi.API.Controllers
 
             int userId = int.Parse(userIdString);
 
-            // Kutudaki bilgileri (Title, Description) ve Token'dan bulduğumuz ID'yi alıp işçimize teslim ediyoruz:
-            int newTicketId = await _ticketRepository.CreateTicketAsync(userId, ticketDto);
+            // ============================================================
+            // 2. YAPAY ZEKA DEVREYE GİRİYOR (YENİ KISIM) 🧠
+            // ============================================================
 
-            // Her şey yolundaysa 200 OK ile müjdeyi veriyoruz
+            // Model için girdiyi hazırla (Sadece Başlık ve Açıklama lazım)
+            var input = new TicketClassifier.ModelInput
+            {
+                Title = ticketDto.Title,
+                Description = ticketDto.Description
+            };
+
+            // Yapay Zekaya tahmin ettir
+            var result = TicketClassifier.Predict(input);
+
+            // Tahmin sonucunu al (1, 2, 3 veya 4 dönecek)
+            // Not: Model float dönebilir, int'e çeviriyoruz.
+            int predictedCategoryId = (int)result.PredictedLabel;
+
+            // ============================================================
+            // 3. REPOSITORY ÇAĞRISI (GÜNCELLENDİ)
+            // ============================================================
+
+            // Artık işçiye (Repository) sadece DTO'yu değil, yapay zekanın tahminini de veriyoruz.
+            // DİKKAT: Bu satır kızarabilir, aşağıda düzelteceğiz.
+            int newTicketId = await _ticketRepository.CreateTicketAsync(userId, ticketDto, predictedCategoryId);
+
             return Ok(new
             {
-                message = "Harika! Biletin başarıyla oluşturuldu.",
-                ticketId = newTicketId
+                message = "Bilet oluşturuldu ve Yapay Zeka kategori tahminini yaptı!",
+                ticketId = newTicketId,
+                predictedCategory = predictedCategoryId // Kullanıcıya da ne tahmin ettiğimizi gösterelim
             });
         }
         [HttpGet("my-tickets")]

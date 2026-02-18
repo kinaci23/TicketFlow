@@ -7,7 +7,7 @@ namespace StajProjesi.API.Data
     
     public interface ITicketRepository
     {
-        Task<int> CreateTicketAsync(int userId, TicketCreateDto ticketDto);
+        Task<int> CreateTicketAsync(int userId, TicketCreateDto ticketDto, int predictedCategoryId);
         Task<IEnumerable<TicketListDto>> GetTicketsByUserIdAsync(int userId);
         Task<IEnumerable<TicketListDto>> GetAllTicketsAsync();
         Task<bool> UpdateTicketAsync(TicketUpdateDto updateDto);
