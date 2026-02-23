@@ -5,5 +5,7 @@
         public int TicketId { get; set; }
         public string Status { get; set; }
         public int FinalCategoryId { get; set; }
+        public string AdminResponse { get; set; }
+
     }
 }

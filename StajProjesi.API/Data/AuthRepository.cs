@@ -33,7 +33,7 @@ namespace StajProjesi.API.Data
                     cmd.Parameters.AddWithValue("@Username", userDto.Username);
                     cmd.Parameters.AddWithValue("@Email", userDto.Email);
                     cmd.Parameters.AddWithValue("@PasswordHash", passwordHash);
-                    cmd.Parameters.AddWithValue("@RoleId", userDto.RoleId);
+                    cmd.Parameters.AddWithValue("@RoleId", 2);
 
                     SqlParameter msgParam = new SqlParameter("@Message", SqlDbType.NVarChar, 100)
                     { Direction = ParameterDirection.Output };
@@ -44,11 +44,10 @@ namespace StajProjesi.API.Data
                     cmd.Parameters.Add(msgParam);
                     cmd.Parameters.Add(successParam);
 
-                    // Kapıyı aç ve komutu ateşle!
                     await con.OpenAsync();
                     await cmd.ExecuteNonQueryAsync();
 
-                    // Veritabanından gelen o güzel mesajı (veya hatayı) dışarı fırlat
+                 
                     return msgParam.Value.ToString();
                 }
             }
@@ -93,7 +92,6 @@ namespace StajProjesi.API.Data
         }
 
         // 2. KİMLİK KARTI (JWT) ÜRETME METODU
-        // Parametre adını roleId yerine roleName yaptık
         private string CreateToken(string userId, string username, string roleName)
         {
             var claims = new List<Claim>

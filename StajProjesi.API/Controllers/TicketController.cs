@@ -10,7 +10,7 @@ namespace StajProjesi.API.Controllers
 {
     // DİKKAT: Bu kapıya [Authorize] koyduk. Yani elinde JWT Token olmayan buraya giremez!
     [Authorize]
-    [Route("api/[controller]")]
+    [Route("api/Tickets")]
     [ApiController]
     public class TicketController : ControllerBase
     {
@@ -88,7 +88,7 @@ namespace StajProjesi.API.Controllers
             // 3. SUNUM: Gelen kargo kutularını (DTO listesini) 200 OK statüsüyle müşteriye sunuyoruz
             return Ok(tickets);
         }
-        [HttpGet("all")]
+        [HttpGet("all-tickets")]
         [Authorize(Roles = "Admin")] // DİKKAT: Sadece Token'ında "Admin" rolü olanlar buraya girebilir!
         public async Task<IActionResult> GetAllTickets()
         {
@@ -107,6 +107,66 @@ namespace StajProjesi.API.Controllers
             }
 
             return BadRequest("Bilet güncellenemedi. TicketId kontrol ediniz.");
+        }
+        [HttpGet("{id}")]
+        [Authorize] // Hem admin hem user kendi biletinin detayını görebilmeli
+        public async Task<IActionResult> GetTicketById(int id)
+        {
+            var ticket = await _ticketRepository.GetTicketByIdAsync(id);
+
+            if (ticket == null)
+            {
+                return NotFound("Bilet bulunamadı.");
+            }
+
+            return Ok(ticket);
+        }
+        // ==========================================
+        // 🚀 1. BİLETİN MESAJLARINI GETİRME (GET)
+        // ==========================================
+        [HttpGet("{ticketId}/messages")]
+        [Authorize] // Hem Admin hem Kullanıcı görebilir
+        public async Task<IActionResult> GetTicketMessages(int ticketId)
+        {
+            // Repository'den biletin geçmiş mesajlarını çekiyoruz
+            var messages = await _ticketRepository.GetTicketMessagesAsync(ticketId);
+
+            // Eğer hiç mesaj yoksa bile boş bir liste ([]) dönecek, hata vermeyecek
+            return Ok(messages);
+        }
+
+        // ==========================================
+        // 🚀 2. YENİ MESAJ GÖNDERME (POST)
+        // ==========================================
+        [HttpPost("{ticketId}/messages")]
+        [Authorize] // Sadece giriş yapmış kişiler mesaj atabilir
+        public async Task<IActionResult> AddTicketMessage(int ticketId, [FromBody] AddMessageDto messageDto)
+        {
+            // Güvenlik: Mesajı atan kişinin ID'sini Frontend'den (Angular'dan) güvenmeyip, 
+            // direkt olarak sunucudaki güvenilir JWT Token içinden çekiyoruz! (Kimse başkasının adına mesaj atamaz)
+            var userIdString = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdString) || !int.TryParse(userIdString, out int userId))
+            {
+                return Unauthorized("Geçersiz kullanıcı kimliği. Lütfen tekrar giriş yapın.");
+            }
+
+            // Güvenlik 2: URL'deki ID ile paketteki ID aynı mı kontrolü
+            if (ticketId != messageDto.TicketId)
+            {
+                return BadRequest("Bilet ID uyuşmazlığı.");
+            }
+
+            // Mesajı veritabanına ekle
+            var newMessage = await _ticketRepository.AddTicketMessageAsync(ticketId, userId, messageDto.MessageText);
+
+            if (newMessage != null)
+            {
+                // Başarıyla eklendiyse, eklenen mesajı (isim ve rolüyle birlikte) Angular'a geri yolluyoruz
+                return Ok(newMessage);
+            }
+
+            return BadRequest("Mesaj eklenirken bir hata oluştu.");
         }
     }
 }
