@@ -7,64 +7,61 @@ import { TicketCreateDto } from '../../../../core/models/ticket.model';
 @Component({
   selector: 'app-ticket-create',
   standalone: false,
-  templateUrl: './ticket-create.html' // Kendi html adına göre düzelt
+  templateUrl: './ticket-create.html'
 })
 export class TicketCreateComponent implements OnInit {
+  // Form Variables
   ticketForm!: FormGroup;
-  isSubmitting: boolean = false; // Gönder butonuna basılınca loading animasyonu için
+  isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
     private ticketService: TicketService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // 🚀 FORM KURALLARI: Hepsi zorunlu, başlık en az 5 karakter olmalı!
     this.ticketForm = this.fb.group({
       title: ['', [Validators.required, Validators.minLength(5)]],
       description: ['', [Validators.required, Validators.minLength(10)]],
-      urgency: ['Normal', Validators.required] // Varsayılan olarak 'Normal' seçili gelsin
+      urgency: ['Normal', Validators.required]
     });
   }
 
+  // Submit Ticket creation
   onSubmit(): void {
-    // Eğer kullanıcı zorunlu alanları boş bıraktıysa işlemi durdur
     if (this.ticketForm.invalid) {
-      this.ticketForm.markAllAsTouched(); // Hata mesajlarını ekranda kızartarak göster
+      this.ticketForm.markAllAsTouched();
       return;
     }
 
-    this.isSubmitting = true; // Yükleniyor animasyonunu başlat
+    this.isSubmitting = true;
 
-    // Formdaki verileri paketle
     const newTicket: TicketCreateDto = {
       title: this.ticketForm.value.title,
       description: this.ticketForm.value.description,
       urgency: this.ticketForm.value.urgency
     };
 
-    console.log("🚀 Yapay Zeka'ya ve Backend'e kargo çıkıyor...", newTicket);
+    console.log("Yapay Zeka'ya ve Backend'e kargo çıkıyor...", newTicket);
 
-    // Servis üzerinden C#'a gönder
     this.ticketService.createTicket(newTicket).subscribe({
       next: (res) => {
-        console.log("✅ Bilet başarıyla oluşturuldu!", res);
+        console.log("Bilet başarıyla oluşturuldu!", res);
         this.isSubmitting = false;
-        
-        // Başarılı olursa kullanıcının biletleri ekranına geri yönlendir
-        this.router.navigate(['/dashboard/my-tickets']);
+
+        this.router.navigate(['/dashboard']);
       },
       error: (err) => {
-        console.error("❌ Bilet oluşturulurken hata:", err);
-        alert("Bilet oluşturulamadı. Backend çalışıyor mu?");
+        console.error("Bilet oluşturulurken hata:", err);
+        alert("Bilet oluşturulamadı. Lütfen sunucunun (Backend) çalıştığından emin olun.");
         this.isSubmitting = false;
       }
     });
   }
 
-  // İptal butonuna basılırsa geri dön
+  // Go Back
   goBack(): void {
-    this.router.navigate(['/dashboard/my-tickets']);
+    this.router.navigate(['/dashboard']);
   }
 }

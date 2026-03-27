@@ -7,40 +7,42 @@ import { Ticket, TicketCreateDto, TicketUpdateDto, TicketMessage, AddMessageDto 
   providedIn: 'root'
 })
 export class TicketService {
-  private apiUrl = 'https://localhost:7139/api/Tickets'; 
+  private apiUrl = 'https://localhost:7139/api/Tickets';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
-  // Kullanıcının kendi biletlerini getirir
+  // Get My Tickets
   getMyTickets(): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(`${this.apiUrl}/my-tickets`);
   }
 
-  // Sadece Admin: Tüm sistemdeki biletleri getirir
+  // Get All Tickets (Admin)
   getAllTickets(): Observable<Ticket[]> {
     return this.http.get<Ticket[]>(`${this.apiUrl}/all-tickets`);
   }
 
-  // Yeni bilet oluşturur
+  // Create Ticket
   createTicket(ticketData: TicketCreateDto): Observable<any> {
     return this.http.post(`${this.apiUrl}/create`, ticketData);
   }
 
+  // Get Ticket By Id
   getTicketById(id: number): Observable<Ticket> {
     return this.http.get<Ticket>(`${this.apiUrl}/${id}`);
   }
 
+  // Update Ticket
   updateTicket(ticketData: any): Observable<any> {
     return this.http.put(`${this.apiUrl}/update`, ticketData);
   }
-  
+
+  // Get Ticket Messages
   getTicketMessages(ticketId: number): Observable<TicketMessage[]> {
     return this.http.get<TicketMessage[]>(`${this.apiUrl}/${ticketId}/messages`);
   }
 
-  // 2. Bilete yeni bir mesaj gönderir
+  // Add Ticket Message
   addTicketMessage(ticketId: number, messageDto: AddMessageDto): Observable<TicketMessage> {
     return this.http.post<TicketMessage>(`${this.apiUrl}/${ticketId}/messages`, messageDto);
   }
-  
 }

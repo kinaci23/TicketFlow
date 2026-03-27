@@ -4,8 +4,8 @@ import { LoginComponent } from './login/login';
 import { RegisterComponent } from './register/register';
 
 const routes: Routes = [
-  // Eğer sadece /auth yazılırsa otomatik olarak /auth/login'e yönlendir
-  { path: '', redirectTo: 'login', pathMatch: 'full' }, 
+  // Redirect to login
+  { path: '', redirectTo: 'login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent }
 ];

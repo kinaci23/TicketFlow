@@ -6,29 +6,29 @@ import { UserRegisterDto } from '../../../core/models/auth.model';
 
 @Component({
   selector: 'app-register',
-  standalone: false, // Kurallarımız gereği standalone değil
+  standalone: false,
   templateUrl: './register.html',
   styleUrls: ['./register.css']
 })
 export class RegisterComponent implements OnInit {
+  // Register Form
   registerForm!: FormGroup;
 
-  // Servislerimizi (DI) içeri alıyoruz
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
-    // Kayıt formunun kuralları (Validasyonlar)
     this.registerForm = this.fb.group({
       username: ['', Validators.required],
-      email: ['', [Validators.required, Validators.email]], // Email formatı kontrolü eklendi
-      password: ['', [Validators.required, Validators.minLength(6)]] // Şifre min 6 karakter olsun
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
+  // Submit Register
   onSubmit(): void {
     if (this.registerForm.invalid) {
       return;
@@ -43,12 +43,11 @@ export class RegisterComponent implements OnInit {
     this.authService.register(registerData).subscribe({
       next: (response) => {
         alert("Kayıt Başarılı! Giriş sayfasına yönlendiriliyorsunuz...");
-        // 🚀 BAŞARILI KAYIT SONRASI OTOMATİK YÖNLENDİRME
-        this.router.navigate(['/auth/login']); 
+        this.router.navigate(['/auth/login']);
       },
       error: (err) => {
-        console.error("❌ Kayıt Hatası:", err);
-        alert("Kayıt Başarısız! Bilgileri kontrol edin.");
+        console.error("Kayıt Hatası:", err);
+        alert("Kayıt Başarısız! Girdiğiniz bilgileri kontrol edin (Bu mail adresi daha önceden eklendi veya bilgiler eksik olabilir).");
       }
     });
   }

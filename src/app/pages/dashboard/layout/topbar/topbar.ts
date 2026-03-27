@@ -8,17 +8,22 @@ import { Router } from '@angular/router';
   templateUrl: './topbar.html'
 })
 export class TopbarComponent implements OnInit {
+  // User Variables
   username: string | undefined = '';
-  userRole: string | null = null; // 🚀 Rol değişkenini ekledik
+  userRole: string | null = null;
 
-  constructor(private authService: AuthService, private router: Router) {}
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) { }
 
   ngOnInit(): void {
     const decoded = this.authService.getDecodedToken();
     this.username = decoded?.username;
-    this.userRole = decoded?.role || null; // 🚀 Rolü token'dan alıyoruz
+    this.userRole = decoded?.role || null;
   }
 
+  // Logout Function
   logout() {
     localStorage.removeItem('token');
     this.router.navigate(['/auth/login']);

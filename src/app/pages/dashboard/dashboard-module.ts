@@ -1,9 +1,11 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule} from '@angular/forms'
+import { ReactiveFormsModule, FormsModule } from '@angular/forms'
 import { RouterModule } from '@angular/router';
 import { DashboardRoutingModule } from './dashboard-routing-module';
-import { SidebarComponent } from './layout/sidebar/sidebar'; 
+
+// Components
+import { SidebarComponent } from './layout/sidebar/sidebar';
 import { TopbarComponent } from './layout/topbar/topbar';
 import { LayoutComponent } from './layout/layout';
 import { TicketListComponent } from './tickets/ticket-list/ticket.list';
@@ -18,7 +20,7 @@ import { TicketCreateComponent } from './tickets/ticket-create/ticket-create';
     TicketListComponent,
     TicketDetailComponent,
     TicketCreateComponent
-  ], 
+  ],
   imports: [
     CommonModule,
     RouterModule,
@@ -27,7 +29,7 @@ import { TicketCreateComponent } from './tickets/ticket-create/ticket-create';
     FormsModule
   ],
   exports: [
-    SidebarComponent 
+    SidebarComponent
   ]
 })
 export class DashboardModule { }

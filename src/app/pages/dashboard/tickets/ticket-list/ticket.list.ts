@@ -1,7 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
 import { TicketService } from '../../../../core/services/ticket.service';
-import { Ticket } from '../../../../core/models/ticket.model';
 import { AuthService } from '../../../../core/services/auth.service';
 import { filter } from 'rxjs/operators';
 
@@ -11,11 +10,13 @@ import { filter } from 'rxjs/operators';
   templateUrl: './ticket.list.html'
 })
 export class TicketListComponent implements OnInit {
-  tickets: any[] = []; // Backendden gelen tüm veriler
-  displayedTickets: any[] = []; // Ekranda (tabloda) gösterilecek filtrelenmiş veriler
+  // Ticket Data
+  tickets: any[] = [];
+  displayedTickets: any[] = [];
   userRole: string | null = null;
-  
-  selectedCategory: string = 'All'; // Dropdown'da seçili olan kategori
+
+  // Filter & Sorting
+  selectedCategory: string = 'All';
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
 
@@ -24,15 +25,14 @@ export class TicketListComponent implements OnInit {
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     const decoded = this.authService.getDecodedToken();
     this.userRole = decoded ? decoded.role : null;
-    
+
     this.loadTickets();
 
-    // URL değişimlerini dinle ve tabloyu güncelle
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe(() => {
@@ -40,16 +40,16 @@ export class TicketListComponent implements OnInit {
     });
   }
 
+  // Load Tickets Data
   loadTickets(): void {
-    // Adminse DİREKT tüm biletleri getir, User ise sadece kendi biletlerini getir.
-    const ticketObservable = this.userRole === 'Admin' 
-      ? this.ticketService.getAllTickets() 
+    const ticketObservable = this.userRole === 'Admin'
+      ? this.ticketService.getAllTickets()
       : this.ticketService.getMyTickets();
 
     ticketObservable.subscribe({
       next: (data) => {
         this.tickets = data;
-        this.applyFilter(); // Veri gelir gelmez filtreyi uygula ve ekrana bas
+        this.applyFilter();
       },
       error: (err) => {
         console.error("Biletler yüklenirken hata oluştu:", err);
@@ -58,13 +58,13 @@ export class TicketListComponent implements OnInit {
     });
   }
 
-  // Kategori Dropdown'ından yeni bir seçim yapıldığında tetiklenir
+  // Category Filter Change
   onCategoryChange(categoryId: string): void {
     this.selectedCategory = categoryId;
     this.applyFilter();
   }
 
-  // Biletleri seçili kategoriye göre filtreler
+  // Apply Filter
   applyFilter(): void {
     if (this.selectedCategory === 'All') {
       this.displayedTickets = [...this.tickets];
@@ -74,10 +74,11 @@ export class TicketListComponent implements OnInit {
         return catId?.toString() === this.selectedCategory;
       });
     }
-    this.cdr.detectChanges(); // Değişikliği anında ekrana yansıt
+
+    this.cdr.detectChanges();
   }
 
-  // Tablo başlıklarına tıklandığında sıralama yapar
+  // Sort Table
   sortTable(column: string): void {
     if (this.sortColumn === column) {
       this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
@@ -109,9 +110,10 @@ export class TicketListComponent implements OnInit {
     });
   }
 
+  // Category Name mapping
   getCategoryName(categoryId: number | undefined): string {
     if (!categoryId) return 'Tahmin Bekleniyor';
-    
+
     switch (categoryId) {
       case 1: return 'Yazılım / Uygulama';
       case 2: return 'Donanım / Arıza';
@@ -121,7 +123,7 @@ export class TicketListComponent implements OnInit {
     }
   }
 
-  // 🚀 Durum Rengi Belirleyici (Tablo İçin)
+  // Status CSS Classes
   getStatusClass(status: string): string {
     const s = status?.toLowerCase() || '';
     if (s === 'çözüldü') return 'bg-emerald-500 text-white shadow-sm';
@@ -131,7 +133,7 @@ export class TicketListComponent implements OnInit {
     return 'bg-slate-100 text-slate-600';
   }
 
-  // 🚀 Öncelik Rengi Belirleyici (Tablo İçin)
+  // Urgency CSS Classes
   getUrgencyClass(urgency: string): string {
     const u = urgency?.toLowerCase() || '';
     if (u === 'düşük') return 'bg-green-100 text-green-700';

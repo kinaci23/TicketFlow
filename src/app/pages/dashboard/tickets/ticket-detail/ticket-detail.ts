@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core'; // 🚀 Alarm zilini import ettik
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { Ticket } from '../../../../core/models/ticket.model';
@@ -10,84 +10,84 @@ import { AuthService } from '../../../../core/services/auth.service';
   templateUrl: './ticket-detail.html'
 })
 export class TicketDetailComponent implements OnInit {
+  // Ticket Data
   ticket: Ticket | null = null;
   isLoading: boolean = true;
+
+  // Admin Variables
   selectedStatus: string = '';
   selectedCategory: number = 0;
   adminResponseText: string = '';
-  isUpdating: boolean = false;
   selectedFinalCategory: number = 0;
-  adminResponse: string = '';
+
+  isUpdating: boolean = false;
   userRole: string | null = null;
-  currentTicketId: number = 0;      
-  messages: any[] = []; // Mesaj geçmişini tutacak liste
-  newMessageText: string = ''; // Input'taki yeni mesaj metni
-  isSendingMessage: boolean = false; // Gönderiliyor mu?
+  currentTicketId: number = 0;
+
+  // Chat Variables
+  messages: any[] = [];
+  newMessageText: string = '';
+  isSendingMessage: boolean = false;
   currentUserId: number = 0;
 
   constructor(
     private route: ActivatedRoute,
     private ticketService: TicketService,
     private router: Router,
-    private cdr: ChangeDetectorRef, // 🚀 Alarm zili hazır
-    private authService: AuthService // 🚀 Kullanıcı rolünü almak için AuthService'i de ekleyelim
-  ) {}
+    private cdr: ChangeDetectorRef,
+    private authService: AuthService
+  ) { }
 
   ngOnInit(): void {
     const decoded = this.authService.getDecodedToken() as any;
     this.userRole = decoded ? decoded.role : null;
-    
-    // 🚀 ÇÖZÜM 1: Giriş yapan kişinin ID'sini Token'dan çekiyoruz
-    // (Token içindeki anahtar ismine göre nameid, sub veya UserId olabilir)
     this.currentUserId = decoded ? Number(decoded.nameid || decoded['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'] || decoded.sub) : 0;
-    
+
     this.route.paramMap.subscribe(params => {
       const idParam = params.get('id');
       if (idParam) {
         this.currentTicketId = Number(idParam);
-        
-        // Biletin detaylarını yükle
+
         this.loadTicket(this.currentTicketId);
-        
-        // 🚀 ÇÖZÜM 2: SAYFA AÇILDIĞINDA MESAJLARI DA YÜKLE!
         this.loadMessages(this.currentTicketId);
-        
       } else {
         this.router.navigate(['/dashboard']);
       }
     });
   }
 
+  // Load Ticket Data
   loadTicket(id: number): void {
     this.isLoading = true;
-    this.cdr.detectChanges(); // Sayfaya yükleniyor animasyonunu bas
+    this.cdr.detectChanges();
 
     this.ticketService.getTicketById(id).subscribe({
       next: (data) => {
         this.ticket = data;
         this.isLoading = false;
-        this.cdr.detectChanges(); // 🚀 SİHİRLİ DOKUNUŞ: Kargo geldi, F5 de atılsa HTML'i zorla güncelle!
+        this.cdr.detectChanges();
+
         this.selectedStatus = data.status || data['status'] || 'Açık';
         this.selectedFinalCategory = data.finalCategoryId || data['finalCategoryId'] || data.predictedCategoryId || data['predictedCategoryId'] || 1;
         this.adminResponseText = data.adminResponse || data['adminResponse'] || '';
-        
       },
       error: (err) => {
         console.error('Bilet çekilemedi:', err);
         this.isLoading = false;
-        this.cdr.detectChanges(); // Hata olsa bile ekranı kurtar
+        this.cdr.detectChanges();
       }
     });
   }
 
+  // Navigate Back
   goBack(): void {
     window.history.back();
   }
 
-  // 🤖 Yapay Zekanın ID'sini Metne Çeviren Yardımcı
+  // Category Name mapping
   getCategoryName(categoryId: number | undefined): string {
     if (!categoryId) return 'Tahmin Bekleniyor';
-    
+
     switch (categoryId) {
       case 1: return 'Yazılım / Uygulama';
       case 2: return 'Donanım / Arıza';
@@ -97,27 +97,26 @@ export class TicketDetailComponent implements OnInit {
     }
   }
 
-  // 🚀 Durum Rengi Belirleyici
+  // Status CSS Classes
   getStatusClass(status: string): string {
     const s = status?.toLowerCase() || '';
-    if (s === 'çözüldü') return 'bg-emerald-500 text-white shadow-sm'; // İçi dolu, yeşil ve beyaz yazı
-    if (s === 'açık') return 'bg-blue-50 text-blue-700 border border-blue-200'; // Açık mavi
+    if (s === 'çözüldü') return 'bg-emerald-500 text-white shadow-sm';
+    if (s === 'açık') return 'bg-blue-50 text-blue-700 border border-blue-200';
     if (s === 'işlemde') return 'bg-orange-50 text-orange-700 border border-orange-200';
     if (s === 'reddedildi') return 'bg-red-500 text-white shadow-sm';
     return 'bg-slate-100 text-slate-600';
   }
 
-  // 🚀 Öncelik Rengi Belirleyici
+  // Urgency CSS Classes
   getUrgencyClass(urgency: string): string {
     const u = urgency?.toLowerCase() || '';
-    if (u === 'düşük') return 'bg-green-100 text-green-700'; // Yeşil
-    if (u === 'normal' || u === 'orta') return 'bg-yellow-100 text-yellow-800'; // Sarı
-    if (u === 'yüksek' || u === 'acil') return 'bg-red-100 text-red-700 font-bold'; // Kırmızı ve Kalın
+    if (u === 'düşük') return 'bg-green-100 text-green-700';
+    if (u === 'normal' || u === 'orta') return 'bg-yellow-100 text-yellow-800';
+    if (u === 'yüksek' || u === 'acil') return 'bg-red-100 text-red-700 font-bold';
     return 'bg-slate-100 text-slate-600';
   }
 
-  // 🚀 BİLETİ GÜNCELLEME METODU
-  // 🚀 GERÇEK BİLET GÜNCELLEME METODU
+  // Update Ticket (Admin)
   updateTicket(): void {
     if (!this.ticket) return;
 
@@ -130,43 +129,40 @@ export class TicketDetailComponent implements OnInit {
       adminResponse: this.adminResponseText
     };
 
-    console.log("🚀 Güncelleme Paketi C#'a Gidiyor:", updateData);
-
     this.ticketService.updateTicket(updateData).subscribe({
       next: (res) => {
-        console.log("✅ Bilet başarıyla güncellendi!", res);
-        
-        // Ekranda anında değişsin diye mevcut verileri eziyoruz
-        this.ticket!.status = this.selectedStatus; 
+        this.ticket!.status = this.selectedStatus;
         this.ticket!.finalCategoryId = Number(this.selectedFinalCategory);
-        this.ticket!.adminResponse = this.adminResponseText; 
-        
+        this.ticket!.adminResponse = this.adminResponseText;
+
         this.isUpdating = false;
-        // Şık bir kullanıcı deneyimi için basit bir uyarı
-        alert("Bilet başarıyla güncellendi ve kullanıcıya iletildi!"); 
+        alert("Bilet başarıyla güncellendi ve ilgili kullanıcıya bilgi iletildi!");
       },
       error: (err) => {
         this.isUpdating = false;
-        console.error("❌ Güncelleme hatası:", err);
-        alert("Bilet güncellenirken bir hata oluştu.");
+        console.error("Güncelleme hatası:", err);
+        alert("Bilet güncellenirken bir backend tabanlı hata oluştu.");
       }
     });
   }
+
+  // Load Chat Messages
   loadMessages(ticketId: number): void {
     this.ticketService.getTicketMessages(ticketId).subscribe({
       next: (data) => {
         this.messages = data;
-        this.cdr.detectChanges(); // Arayüzü tazele
+        this.cdr.detectChanges();
       },
       error: (err) => console.error('Mesajlar yüklenemedi:', err)
     });
   }
 
-  // 🚀 MESAJ GÖNDERME
+  // Send Chat Message
   sendMessage(): void {
     if (!this.newMessageText.trim() || this.isSendingMessage) return;
 
     this.isSendingMessage = true;
+
     const messageDto = {
       ticketId: this.currentTicketId,
       messageText: this.newMessageText
@@ -174,11 +170,10 @@ export class TicketDetailComponent implements OnInit {
 
     this.ticketService.addTicketMessage(this.currentTicketId, messageDto).subscribe({
       next: (res) => {
-        this.messages.push(res); // Yeni mesajı listeye ekle (Anlık görüntü)
-        this.newMessageText = ''; // Input'u temizle
+        this.messages.push(res);
+        this.newMessageText = '';
         this.isSendingMessage = false;
         this.cdr.detectChanges();
-        // Sayfayı mesajların en altına kaydırmak için bir sonraki adımda kod ekleyeceğiz
       },
       error: (err) => {
         console.error('Mesaj gönderilemedi:', err);

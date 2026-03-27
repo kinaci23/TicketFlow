@@ -1,24 +1,24 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AuthService } from '../../../core/services/auth.service'; // Servisimizi aldık
-import { UserLoginDto } from '../../../core/models/auth.model'; // DTO'muzu aldık
-import { Router } from '@angular/router'; // Router'ı aldık   
+import { AuthService } from '../../../core/services/auth.service';
+import { UserLoginDto } from '../../../core/models/auth.model';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-login',
-  standalone: false, // Kurallarımız gereği standalone değil
+  standalone: false,
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
 export class LoginComponent implements OnInit {
+  // Login Form
   loginForm!: FormGroup;
 
-  // Dependency Injection (DI) kuralımıza uyarak servisi içeri alıyoruz
   constructor(
     private fb: FormBuilder,
     private authService: AuthService,
     private router: Router
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.loginForm = this.fb.group({
@@ -27,13 +27,12 @@ export class LoginComponent implements OnInit {
     });
   }
 
+  // Submit Login
   onSubmit(): void {
-    // Form kurallara uygun değilse hiçbir şey yapma
     if (this.loginForm.invalid) {
       return;
     }
 
-    // Gelen veriyi "Strict Type" olarak DTO'muza atıyoruz
     const loginData: UserLoginDto = {
       username: this.loginForm.value.username,
       password: this.loginForm.value.password
@@ -41,24 +40,20 @@ export class LoginComponent implements OnInit {
 
     console.log("Backend'e gönderiliyor...", loginData);
 
-    // Component HTTP isteği atmaz, sadece servisi çağırır! (Single Responsibility)
     this.authService.login(loginData).subscribe({
       next: (res) => {
-        localStorage.setItem('token', res.token); // Token'ı kaydet
+        localStorage.setItem('token', res.token);
 
-        // 🚀 AKILLI YÖNLENDİRME (Trafik Polisi)
         const decoded = this.authService.getDecodedToken();
         const userRole = decoded ? decoded.role : null;
 
         if (userRole === 'Admin') {
-          // Admin ise direkt Tüm Biletlere şutla
-          this.router.navigate(['/dashboard/all-tickets']); 
+          this.router.navigate(['/dashboard/all-tickets']);
         } else {
-          // Normal kullanıcı ise Kendi Biletlerine şutla
-          this.router.navigate(['/dashboard/my-tickets']); 
+          this.router.navigate(['/dashboard/my-tickets']);
         }
       },
-      error: (err) => alert("Giriş başarısız!")
+      error: (err) => alert("Giriş başarısız! Lütfen kullanıcı adı ve şifrenizi kontrol edip tekrar deneyin.")
     });
   }
 }
