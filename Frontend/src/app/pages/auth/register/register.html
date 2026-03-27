@@ -1,0 +1,43 @@
+<div class="bg-background-light dark:bg-background-dark min-h-screen flex items-center justify-center p-4">
+  <div class="w-full max-w-[420px] bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-8 md:p-10">
+    
+    <div class="flex flex-col items-center mb-8">
+      <div class="flex items-center gap-2">
+        <div class="text-primary size-8">
+          <svg fill="currentColor" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path clip-rule="evenodd" d="M24 4H42V17.3333V30.6667H24V44H6V30.6667V17.3333H24V4Z" fill-rule="evenodd"></path>
+          </svg>
+        </div>
+        <h1 class="text-slate-900 dark:text-slate-100 text-2xl font-bold tracking-tight">TicketFlow</h1>
+      </div>
+      <p class="text-slate-500 dark:text-slate-400 text-base mt-2">Yeni Hesap Oluştur</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" class="space-y-6">
+      
+      <div class="flex flex-col gap-2">
+        <input formControlName="username" class="block w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm" id="username" type="text" placeholder="Kullanıcı Adı"/>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <input formControlName="email" class="block w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm" id="email" type="email" placeholder="E-posta Adresi"/>
+        <span *ngIf="registerForm.get('email')?.touched && registerForm.get('email')?.errors?.['email']" class="text-xs text-red-500">Geçerli bir e-posta giriniz.</span>
+      </div>
+
+      <div class="flex flex-col gap-2">
+        <input formControlName="password" class="block w-full px-4 py-3 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-colors text-sm" id="password" type="password" placeholder="Şifre (Min 6 karakter)"/>
+      </div>
+
+      <button type="submit" [disabled]="registerForm.invalid" class="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed">
+        Kayıt Ol
+      </button>
+    </form>
+
+    <div class="mt-8 text-center border-t border-slate-100 dark:border-slate-800 pt-6">
+      <p class="text-sm text-slate-600 dark:text-slate-400">
+        Zaten hesabınız var mı? 
+        <a class="text-primary font-semibold hover:underline cursor-pointer" routerLink="/auth/login">Giriş Yap</a>
+      </p>
+    </div>
+  </div>
+</div>

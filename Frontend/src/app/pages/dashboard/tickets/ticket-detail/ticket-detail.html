@@ -1,0 +1,143 @@
+<div class="max-w-7xl mx-auto px-4 sm:px-0 mt-6 mb-10">
+  
+  <button routerLink="/dashboard/my-tickets" class="text-sm font-semibold text-slate-500 hover:text-primary transition-colors flex items-center gap-2 mb-6">
+    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+    Biletlere Dön
+  </button>
+
+  <div *ngIf="ticket" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    
+    <div class="lg:col-span-2 space-y-6">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-8">
+        <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <h1 class="text-2xl font-extrabold text-slate-800 dark:text-white">{{ ticket.title || ticket['title'] }}</h1>
+          <div class="flex items-center gap-2">
+            <span class="px-3 py-1.5 rounded-full text-xs font-bold tracking-wide transition-colors" 
+                  [ngClass]="getStatusClass(ticket.status || ticket['status'])">
+              {{ ticket.status || ticket['status'] }}
+            </span>
+            
+            <span class="px-3 py-1.5 rounded-full text-xs font-bold tracking-wide transition-colors" 
+                  [ngClass]="getUrgencyClass(ticket.urgency || ticket['urgency'])">
+              {{ ticket.urgency || ticket['urgency'] }}
+            </span>
+          </div>
+        </div>
+
+        <hr class="border-slate-100 dark:border-slate-800 mb-6">
+
+        <div class="prose dark:prose-invert max-w-none text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-8">
+          <p class="whitespace-pre-wrap">{{ ticket.description || ticket['description'] }}</p>
+        </div>
+
+        <div class="mt-8 bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 flex flex-col overflow-hidden">
+          
+          <div class="p-4 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-slate-800 flex justify-between items-center">
+            <h3 class="font-bold text-slate-800 dark:text-white flex items-center gap-2">
+              <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/></svg>
+              Sohbet Geçmişi
+            </h3>
+          </div>
+
+          <div class="p-6 space-y-4 max-h-[500px] overflow-y-auto bg-slate-50/30 dark:bg-transparent">
+            <div *ngFor="let msg of messages" 
+                 [ngClass]="{'flex-row-reverse': msg.userId === currentUserId}" 
+                 class="flex items-start gap-3">
+              
+              <div class="w-8 h-8 rounded-full flex-shrink-0 flex items-center justify-center text-xs font-bold"
+                   [ngClass]="msg.senderRoleId === 1 ? 'bg-indigo-600 text-white' : 'bg-slate-200 text-slate-600'">
+                {{ msg.senderName.substring(0, 1).toUpperCase() }}
+              </div>
+
+              <div [ngClass]="msg.userId === currentUserId ? 'bg-primary text-white' : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700'"
+                   class="max-w-[80%] rounded-2xl px-4 py-2 shadow-sm">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] font-bold uppercase opacity-70">{{ msg.senderName }}</span>
+                  <span class="text-[10px] opacity-50">{{ msg.createdAt | date:'HH:mm' }}</span>
+                </div>
+                <p class="text-sm leading-relaxed">{{ msg.messageText }}</p>
+              </div>
+            </div>
+
+            <div *ngIf="messages.length === 0" class="text-center py-10 opacity-40">
+              <p class="text-sm italic">Henüz mesaj bulunmuyor. İlk mesajı siz yazın!</p>
+            </div>
+          </div>
+
+          <div class="p-4 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900">
+            <div class="relative flex items-center">
+              <input [(ngModel)]="newMessageText" 
+                     (keyup.enter)="sendMessage()"
+                     placeholder="Bir mesaj yazın..." 
+                     class="w-full pl-4 pr-12 py-3 bg-slate-100 dark:bg-slate-800 border-none rounded-xl text-sm focus:ring-2 focus:ring-primary outline-none transition-all">
+              
+              <button (click)="sendMessage()" 
+                      [disabled]="!newMessageText.trim() || isSendingMessage"
+                      class="absolute right-2 p-2 text-primary hover:bg-white dark:hover:bg-slate-700 rounded-lg transition-colors disabled:opacity-30">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="ticket.predictedCategoryId || ticket['predictedCategoryId']" class="bg-indigo-50 dark:bg-indigo-900/20 rounded-xl p-4 border border-indigo-100 dark:border-indigo-800/30 flex items-start gap-3">
+          <div class="text-indigo-500 text-xl">🤖</div>
+          <div>
+            <h4 class="text-sm font-bold text-indigo-900 dark:text-indigo-300">Yapay Zeka Analizi</h4>
+            <p class="text-xs text-indigo-700 dark:text-indigo-400 mt-1"><strong>"{{ getCategoryName(ticket.predictedCategoryId || ticket['predictedCategoryId']) }}"</strong></p>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="ticket.adminResponse || ticket['adminResponse']" class="bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl shadow-sm border border-emerald-200 dark:border-emerald-800 p-8">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center text-white">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+          </div>
+          <h3 class="text-lg font-bold text-emerald-900 dark:text-emerald-300">Destek Ekibi Yanıtı</h3>
+        </div>
+        <p class="text-sm text-emerald-800 dark:text-emerald-400 whitespace-pre-wrap">{{ ticket.adminResponse || ticket['adminResponse'] }}</p>
+      </div>
+    </div>
+
+    <div *ngIf="userRole === 'Admin'" class="lg:col-span-1">
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 p-6 sticky top-6">
+        <h3 class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+          <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          Yönetim Paneli
+        </h3>
+
+        <div class="space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Bilet Durumu</label>
+            <select [(ngModel)]="selectedStatus" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer">
+              <option value="Açık">Açık</option>
+              <option value="Çözüldü">Çözüldü</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Final Kategori Seçimi</label>
+            <select [(ngModel)]="selectedFinalCategory" class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-primary transition-all cursor-pointer">
+              <option value="1">Yazılım / Uygulama</option>
+              <option value="2">Donanım / Arıza</option>
+              <option value="3">Ağ ve İnternet</option>
+              <option value="4">Kullanıcı İşlemleri / Şifre</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kullanıcıya Yanıt / Çözüm Notu</label>
+            <textarea [(ngModel)]="adminResponseText" rows="4" placeholder="Kullanıcıya iletilecek çözüm notunu buraya yazın..." class="w-full border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-primary transition-all resize-none"></textarea>
+          </div>
+
+          <button (click)="updateTicket()" [disabled]="isUpdating" class="w-full mt-2 bg-slate-800 hover:bg-slate-900 dark:bg-white dark:hover:bg-slate-100 dark:text-slate-900 text-white font-bold py-3 px-4 rounded-lg transition-colors flex items-center justify-center gap-2">
+            <svg *ngIf="isUpdating" class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+            {{ isUpdating ? 'Kaydediliyor...' : 'Değişiklikleri Kaydet' }}
+          </button>
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</div>
