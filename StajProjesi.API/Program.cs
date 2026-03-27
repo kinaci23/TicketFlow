@@ -14,7 +14,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AngularIcinOzelIzin",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200") // Angular'ýn adresi
+            policy.WithOrigins("http://localhost:4200", "http://192.168.34.62:4200/") // Angular'ýn adresi
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });

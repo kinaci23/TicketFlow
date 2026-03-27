@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace StajProjesi.API.Controllers
 {
-    // 1. ADRES TANIMLAMASI: Bu sınıfın bir API kapısı olduğunu ve adresinin "api/auth" olacağını belirtiyoruz.
     [Route("api/[controller]")]
     [ApiController]
     public class AuthController : ControllerBase

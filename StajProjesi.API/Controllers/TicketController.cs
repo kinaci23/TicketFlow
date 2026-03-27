@@ -8,15 +8,13 @@ using System.Threading.Tasks;
 
 namespace StajProjesi.API.Controllers
 {
-    // DİKKAT: Bu kapıya [Authorize] koyduk. Yani elinde JWT Token olmayan buraya giremez!
+    // JWT Token olmayan buraya giremez!
     [Authorize]
     [Route("api/Tickets")]
     [ApiController]
     public class TicketController : ControllerBase
     {
         private readonly ITicketRepository _ticketRepository;
-
-        // Garsonumuza (Controller) işçimizi (Repository) tanıtıyoruz
         public TicketController(ITicketRepository ticketRepository)
         {
             _ticketRepository = ticketRepository;
