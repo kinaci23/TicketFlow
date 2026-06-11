@@ -11,11 +11,12 @@ namespace StajProjesi.API.Data
     public class AuthRepository : IAuthRepository
     {
         private readonly string _connectionString;
+        private readonly IConfiguration _configuration;
 
-        // Proje başlarken appsettings.json'daki adresimizi buraya çeker
         public AuthRepository(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection");
+            _configuration = configuration;
         }
 
         // KAYIT OLMA METODU (SQL'deki sp_UserRegister'ı çalıştırır)
@@ -102,7 +103,7 @@ namespace StajProjesi.API.Data
         new Claim(ClaimTypes.Role, roleName)
     };
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes("BenimCokGizliVeUzunStajProjesiAnahtarim123456789!"));
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256Signature);
 
             var tokenDescriptor = new SecurityTokenDescriptor
@@ -110,8 +111,8 @@ namespace StajProjesi.API.Data
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.Now.AddDays(1),
                 SigningCredentials = creds,
-                Issuer = "StajProjesiAPI",
-                Audience = "StajProjesiUsers"
+                Issuer = _configuration["Jwt:Issuer"],
+                Audience = _configuration["Jwt:Audience"]
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

@@ -1,0 +1,28 @@
+# Visual Studio
+.vs/
+
+# Docs (yerel notlar, repoya dahil degil)
+docs/
+
+# .NET build output
+[Bb]in/
+[Oo]bj/
+*.user
+
+# Node
+node_modules/
+dist/
+
+# Angular cache
+.angular/
+
+# Environment / secrets
+.env
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini

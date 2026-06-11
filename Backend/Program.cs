@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+ï»¿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
@@ -14,14 +14,14 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AngularIcinOzelIzin",
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200", "http://192.168.34.62:4200/") // Angular'ýn adresi
+            policy.WithOrigins("http://localhost:4200", "http://192.168.34.62:4200") // Angular'Ä±n adresi
                   .AllowAnyHeader()
                   .AllowAnyMethod();
         });
 });
 
 builder.Services.AddControllers();
-// JWT Kimlik Doðrulama Ayarlarý
+// JWT Kimlik DoÄŸrulama AyarlarÄ±
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -40,10 +40,10 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder.Services.AddSwaggerGen(c =>
 {
-    // 1. Kilit Tanýmý
+    // 1. Kilit TanÄ±mÄ±
     c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "JWT Tokenýný 'Bearer {token}' formatýnda giriniz.",
+        Description = "JWT TokenÄ±nÄ± 'Bearer {token}' formatÄ±nda giriniz.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.ApiKey,
@@ -89,3 +89,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
